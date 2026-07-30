@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CSE Student Register — Netrokona University</title>
+<title>CSE — Netrokona University</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -393,7 +393,7 @@
       <div>
         <h1>Netrokona University</h1>
         <div class="dept-line">Department of Computer Science &amp; Engineering</div>
-        <div class="sub-line">Student Information Register</div>
+        <div class="sub-line">Student Directory</div>
       </div>
     </div>
   </div>
@@ -585,7 +585,7 @@
     const aoa = [
       ['Netrokona University'],
       ['Department of Computer Science & Engineering'],
-      ['Student Information Register'],
+      ['Student Directory'],
       [],
       ['No.', 'Name', 'Number', 'Currently Living Address']
     ];
@@ -600,7 +600,7 @@
     ws['!cols'] = [ { wch:6 }, { wch:26 }, { wch:18 }, { wch:46 } ];
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Student Register');
+    XLSX.utils.book_append_sheet(wb, ws, 'Student Directory');
     XLSX.writeFile(wb, 'cse_student_register.xlsx');
     showToast('Excel file downloaded');
   });
@@ -626,7 +626,7 @@
 
     doc.setFontSize(10);
     doc.setTextColor(90,90,90);
-    doc.text('Student Information Register', pageWidth/2, 80, { align:'center' });
+    doc.text('Student Directory', pageWidth/2, 80, { align:'center' });
 
     doc.setDrawColor(169, 128, 71);
     doc.setLineWidth(1.2);
