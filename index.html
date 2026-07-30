@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
@@ -475,7 +475,7 @@
 
     <div class="toolbar">
       <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Search by name, number, or address…">
+        <input type="text" id="searchInput" placeholder="Search by name, mobile number, or address…">
       </div>
       <button class="btn-add" id="addRowBtn">+ Add Student</button>
       <button class="btn-ghost" id="addTenBtn">+10 Rows</button>
@@ -488,7 +488,7 @@
           <tr>
             <th class="col-no">No.</th>
             <th>Name</th>
-            <th>Number</th>
+            <th>Mobile Number</th>
             <th>Currently Living Address</th>
             <th class="col-action"></th>
           </tr>
@@ -607,7 +607,7 @@
     tr.innerHTML = `
       <td class="col-no">0</td>
       <td data-label="Name"><input type="text" class="f-name" placeholder="Full name" value="${escapeAttr(prefill.name || '')}"></td>
-      <td data-label="Number"><input type="tel" class="f-number" placeholder="e.g. 017XXXXXXXX" value="${escapeAttr(prefill.number || '')}"></td>
+      <td data-label="Mobile Number"><input type="tel" class="f-number" placeholder="e.g. 017XXXXXXXX" value="${escapeAttr(prefill.mobile_number || prefill.number || '')}"></td>
       <td data-label="Address"><input type="text" class="f-address" placeholder="Village/Area, Upazila, District" value="${escapeAttr(prefill.address || '')}"></td>
       <td class="col-action"><button class="row-delete" title="Remove row" aria-label="Remove row">✕</button></td>
     `;
@@ -669,10 +669,10 @@
     const data = [];
     rows.forEach((tr) => {
       const name = tr.querySelector('.f-name').value.trim();
-      const number = tr.querySelector('.f-number').value.trim();
+      const mobile_number = tr.querySelector('.f-number').value.trim();
       const address = tr.querySelector('.f-address').value.trim();
       if (includeBlank || name !== ''){
-        data.push({ serial: data.length + 1, name, number, address });
+        data.push({ serial: data.length + 1, name, mobile_number, address });
       }
     });
     return data;
@@ -703,27 +703,108 @@
     showToast('JSON downloaded');
   });
 
-  document.getElementById('exportExcel').addEventListener('click', () => {
+  document.getElementById('exportExcel').addEventListener('click', async () => {
     const data = getData(false);
     if (data.length === 0){ showToast('Add at least one student first'); return; }
-    const aoa = [
-      ['Netrokona University'],
-      ['Department of Computer Science & Engineering'],
-      ['Student Directory'],
-      [],
-      ['No.', 'Name', 'Number', 'Currently Living Address']
-    ];
-    data.forEach(d => aoa.push([d.serial, d.name, d.number, d.address]));
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!merges'] = [
-      { s:{r:0,c:0}, e:{r:0,c:3} },
-      { s:{r:1,c:0}, e:{r:1,c:3} },
-      { s:{r:2,c:0}, e:{r:2,c:3} }
-    ];
-    ws['!cols'] = [ { wch:6 }, { wch:26 }, { wch:18 }, { wch:46 } ];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Student Directory');
-    XLSX.writeFile(wb, 'cse_student_directory.xlsx');
+
+    const INK = 'FF1C2541', MAROON = 'FF7A2530', GOLD = 'FFA98047',
+          PAPER = 'FFF2F0E8', PAPER_LINE = 'FFDCD7C6', CARD = 'FFFBFAF5', WHITE = 'FFF6F1E4';
+
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'CSE Department, Netrokona University';
+    wb.created = new Date();
+    const sheet = wb.addWorksheet('Student Directory', {
+      views: [{ state: 'frozen', ySplit: 5, showGridLines: false }]
+    });
+    sheet.columns = [ { width: 7 }, { width: 28 }, { width: 20 }, { width: 50 } ];
+
+    // --- Letterhead block (rows 1-3) ---
+    sheet.mergeCells('A1:D1');
+    sheet.getCell('A1').value = 'Netrokona University';
+    sheet.getCell('A1').font = { name: 'Georgia', size: 17, bold: true, color: { argb: WHITE } };
+    sheet.getCell('A1').alignment = { horizontal: 'center', vertical: 'middle' };
+    sheet.getCell('A1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: INK } };
+    sheet.getRow(1).height = 28;
+
+    sheet.mergeCells('A2:D2');
+    sheet.getCell('A2').value = 'Department of Computer Science & Engineering';
+    sheet.getCell('A2').font = { size: 12, bold: true, color: { argb: GOLD } };
+    sheet.getCell('A2').alignment = { horizontal: 'center', vertical: 'middle' };
+    sheet.getCell('A2').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: INK } };
+    sheet.getRow(2).height = 20;
+
+    sheet.mergeCells('A3:D3');
+    sheet.getCell('A3').value = 'Student Directory';
+    sheet.getCell('A3').font = { italic: true, size: 11, bold: true, color: { argb: MAROON } };
+    sheet.getCell('A3').alignment = { horizontal: 'center', vertical: 'middle' };
+    sheet.getCell('A3').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: PAPER } };
+    sheet.getRow(3).height = 20;
+
+    sheet.getRow(4).height = 6; // spacer row
+
+    // --- Column header row (row 5), bold + filled + bordered ---
+    const headerRow = sheet.getRow(5);
+    headerRow.values = ['No.', 'Name', 'Mobile Number', 'Currently Living Address'];
+    headerRow.height = 24;
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, size: 11.5, color: { argb: WHITE } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: MAROON } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        top: { style: 'medium', color: { argb: GOLD } },
+        bottom: { style: 'medium', color: { argb: GOLD } },
+        left: { style: 'thin', color: { argb: GOLD } },
+        right: { style: 'thin', color: { argb: GOLD } }
+      };
+    });
+
+    // --- Data rows, bordered with alternating fill ---
+    data.forEach((d, i) => {
+      const row = sheet.addRow([d.serial, d.name, d.mobile_number, d.address]);
+      row.height = 20;
+      const fillColor = i % 2 === 0 ? CARD : PAPER;
+      row.eachCell((cell, colNumber) => {
+        cell.font = { size: 10.5, color: { argb: INK } };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: fillColor } };
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: colNumber === 1 ? 'center' : 'left',
+          wrapText: true
+        };
+        cell.border = {
+          top: { style: 'thin', color: { argb: PAPER_LINE } },
+          bottom: { style: 'thin', color: { argb: PAPER_LINE } },
+          left: { style: 'thin', color: { argb: PAPER_LINE } },
+          right: { style: 'thin', color: { argb: PAPER_LINE } }
+        };
+      });
+      row.getCell(1).font = { bold: true, size: 10.5, color: { argb: MAROON } };
+    });
+
+    // --- Totals row ---
+    const totalRowNum = sheet.lastRow.number + 1;
+    sheet.mergeCells(`A${totalRowNum}:C${totalRowNum}`);
+    const totalLabelCell = sheet.getCell(`A${totalRowNum}`);
+    totalLabelCell.value = 'Total Students Registered';
+    totalLabelCell.font = { bold: true, size: 11, color: { argb: WHITE } };
+    totalLabelCell.alignment = { horizontal: 'right', vertical: 'middle' };
+    totalLabelCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: INK } };
+
+    const totalValueCell = sheet.getCell(`D${totalRowNum}`);
+    totalValueCell.value = data.length;
+    totalValueCell.font = { bold: true, size: 11.5, color: { argb: GOLD } };
+    totalValueCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    totalValueCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: INK } };
+    sheet.getRow(totalRowNum).height = 22;
+    sheet.getRow(totalRowNum).eachCell(cell => {
+      cell.border = { top: { style: 'medium', color: { argb: GOLD } }, bottom: { style: 'medium', color: { argb: GOLD } } };
+    });
+
+    // --- Header row + autofilter for easy sorting ---
+    sheet.autoFilter = { from: { row: 5, column: 1 }, to: { row: 5, column: 4 } };
+
+    const buffer = await wb.xlsx.writeBuffer();
+    downloadBlob(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), 'cse_student_directory.xlsx');
     showToast('Excel file downloaded');
   });
 
@@ -754,8 +835,8 @@
 
     doc.autoTable({
       startY: 104,
-      head: [['No.', 'Name', 'Number', 'Currently Living Address']],
-      body: data.map(d => [d.serial, d.name, d.number, d.address]),
+      head: [['No.', 'Name', 'Mobile Number', 'Currently Living Address']],
+      body: data.map(d => [d.serial, d.name, d.mobile_number, d.address]),
       styles: { font:'helvetica', fontSize:9.5, cellPadding:6, textColor:[28,37,65] },
       headStyles: { fillColor:[28,37,65], textColor:[240,238,228], fontStyle:'bold' },
       alternateRowStyles: { fillColor:[246,244,235] },
