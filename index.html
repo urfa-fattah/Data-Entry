@@ -7,9 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
-<!-- Excel export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<!-- PDF export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
@@ -27,30 +25,28 @@
     --ok:#3E6B4F;
     --danger:#A83232;
     --shadow: 0 8px 24px rgba(28,37,65,0.08);
+    --radius: 8px;
   }
 
   *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
   html,body{margin:0;padding:0;}
   body{
     background:
-      repeating-linear-gradient(
-        180deg,
-        var(--paper) 0px,
-        var(--paper) 37px,
-        var(--paper-line) 38px
-      );
+      repeating-linear-gradient(180deg, var(--paper) 0px, var(--paper) 37px, var(--paper-line) 38px);
     background-color:var(--paper);
     font-family:'IBM Plex Sans', sans-serif;
     color:var(--ink);
     min-height:100vh;
     padding:0 0 60px 0;
+    -webkit-font-smoothing:antialiased;
   }
 
   /* ===== Header / Letterhead ===== */
   .letterhead{
     background:linear-gradient(180deg, var(--ink) 0%, var(--ink-soft) 100%);
     color:#EDEAE0;
-    padding:34px 6vw 26px 6vw;
+    padding:clamp(20px,4vw,34px) clamp(18px,6vw,6vw) clamp(18px,3vw,26px);
     position:relative;
     border-bottom:6px solid var(--gold);
     box-shadow: var(--shadow);
@@ -63,54 +59,76 @@
     background:var(--maroon);
   }
   .letterhead-inner{
-    max-width:1100px;
+    max-width:1180px;
     margin:0 auto;
     display:flex;
     align-items:center;
-    gap:22px;
+    gap:clamp(12px,3vw,22px);
+    flex-wrap:wrap;
   }
   .seal{
     flex:0 0 auto;
-    width:66px;height:66px;
+    width:clamp(44px,8vw,66px);height:clamp(44px,8vw,66px);
     border-radius:50%;
     border:2px solid var(--gold-soft);
     display:flex;align-items:center;justify-content:center;
     font-family:'Playfair Display', serif;
     font-weight:800;
-    font-size:15px;
+    font-size:clamp(11px,2.4vw,15px);
     letter-spacing:0.5px;
     color:var(--gold-soft);
     background:radial-gradient(circle at 35% 30%, rgba(201,167,104,0.18), transparent 70%);
     text-align:center;
     line-height:1.05;
   }
+  .letterhead-text{ min-width:0; }
   .letterhead h1{
     font-family:'Playfair Display', serif;
     font-weight:800;
-    font-size:clamp(22px, 3vw, 32px);
+    font-size:clamp(19px, 3.4vw, 32px);
     margin:0 0 4px 0;
     letter-spacing:0.3px;
   }
   .letterhead .dept-line{
-    font-size:14.5px;
+    font-size:clamp(11.5px,2vw,14.5px);
     color:var(--gold-soft);
-    letter-spacing:1.6px;
+    letter-spacing:1.4px;
     text-transform:uppercase;
     font-weight:600;
   }
   .letterhead .sub-line{
-    font-size:13px;
+    font-size:clamp(11.5px,1.8vw,13px);
     color:#C7C4B8;
     margin-top:6px;
     font-style:italic;
     font-family:'Playfair Display', serif;
   }
 
+  /* ===== Status strip ===== */
+  .status-strip{
+    max-width:1180px;
+    margin:0 auto;
+    padding:10px clamp(18px,6vw,6vw) 0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .status-dot{
+    width:7px;height:7px;border-radius:50%;
+    background:var(--ok);
+    flex:0 0 auto;
+    box-shadow:0 0 0 3px rgba(62,107,79,0.15);
+  }
+  .status-dot.warn{ background:var(--gold); box-shadow:0 0 0 3px rgba(169,128,71,0.18); }
+  .status-strip .save-time{ font-family:'IBM Plex Mono', monospace; color:var(--ink); }
+
   /* ===== Main container ===== */
   .wrap{
-    max-width:1100px;
+    max-width:1180px;
     margin:0 auto;
-    padding:28px 6vw 0 6vw;
+    padding:18px clamp(18px,6vw,6vw) 0;
   }
 
   .register-title{
@@ -125,19 +143,20 @@
   }
   .register-title h2{
     font-family:'Playfair Display', serif;
-    font-size:20px;
+    font-size:clamp(17px,2.4vw,20px);
     margin:0;
     color:var(--maroon-deep);
     font-weight:700;
   }
   .register-title .count{
     font-family:'IBM Plex Mono', monospace;
-    font-size:13px;
+    font-size:12.5px;
     color:var(--ink-soft);
     background:var(--paper-card);
     border:1px solid var(--paper-line);
     padding:4px 10px;
     border-radius:3px;
+    white-space:nowrap;
   }
 
   /* ===== Toolbar ===== */
@@ -147,10 +166,17 @@
     flex-wrap:wrap;
     align-items:center;
     margin-bottom:16px;
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--paper);
+    padding:10px 0;
+    margin-top:-10px;
   }
   .search-box{
     flex:1 1 220px;
     position:relative;
+    min-width:0;
   }
   .search-box input{
     width:100%;
@@ -173,6 +199,7 @@
     transform:translateY(-50%);
     color:var(--ink-soft);
     font-size:16px;
+    pointer-events:none;
   }
 
   button{
@@ -184,16 +211,13 @@
     padding:10px 16px;
     cursor:pointer;
     transition:transform 0.08s ease, box-shadow 0.15s ease, background 0.15s ease;
+    white-space:nowrap;
   }
   button:active{transform:translateY(1px);}
   button:focus-visible{outline:2px solid var(--gold-soft); outline-offset:2px;}
 
-  .btn-add{
-    background:var(--maroon);
-    color:#F6F1E4;
-  }
+  .btn-add{ background:var(--maroon); color:#F6F1E4; }
   .btn-add:hover{background:var(--maroon-deep);}
-  .btn-add::before{content:"+  "; }
 
   .btn-ghost{
     background:transparent;
@@ -202,22 +226,17 @@
   }
   .btn-ghost:hover{background:var(--paper-card);}
 
-  /* ===== Table (ledger) ===== */
+  /* ===== Ledger table (desktop) ===== */
   .ledger-frame{
     background:var(--paper-card);
     border:1px solid var(--paper-line);
-    border-radius:6px;
+    border-radius:var(--radius);
     box-shadow:var(--shadow);
     overflow:hidden;
     margin-bottom:22px;
   }
-  table{
-    width:100%;
-    border-collapse:collapse;
-  }
-  thead tr{
-    background:var(--ink);
-  }
+  table{ width:100%; border-collapse:collapse; }
+  thead tr{ background:var(--ink); }
   thead th{
     color:#EDEAE0;
     font-family:'IBM Plex Mono', monospace;
@@ -234,19 +253,14 @@
 
   tbody tr{
     border-bottom:1px solid var(--paper-line);
+    animation:fadeInRow 0.25s ease;
   }
-  tbody tr:nth-child(even){
-    background:rgba(169,128,71,0.045);
-  }
-  tbody tr:hover{
-    background:rgba(122,37,48,0.05);
-  }
+  @keyframes fadeInRow{ from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:translateY(0);} }
+  tbody tr:nth-child(even){ background:rgba(169,128,71,0.045); }
+  tbody tr:hover{ background:rgba(122,37,48,0.05); }
   tbody tr.hidden-row{ display:none; }
 
-  td{
-    padding:0;
-    vertical-align:middle;
-  }
+  td{ padding:0; vertical-align:middle; }
   td.col-no{
     font-family:'IBM Plex Mono', monospace;
     color:var(--maroon-deep);
@@ -284,9 +298,18 @@
   .row-delete:hover{ background:rgba(168,50,50,0.1); }
 
   .empty-state{
-    padding:40px 20px;
+    padding:48px 20px;
     text-align:center;
     color:var(--ink-soft);
+  }
+  .empty-state .glyph{
+    font-family:'Playfair Display', serif;
+    font-size:34px;
+    color:var(--gold-soft);
+    display:block;
+    margin-bottom:8px;
+  }
+  .empty-state .msg{
     font-style:italic;
     font-family:'Playfair Display', serif;
     font-size:15px;
@@ -296,7 +319,7 @@
   .export-dock{
     background:var(--paper-card);
     border:1px solid var(--paper-line);
-    border-radius:6px;
+    border-radius:var(--radius);
     box-shadow:var(--shadow);
     padding:20px 22px;
     display:flex;
@@ -320,19 +343,8 @@
     font-size:12.5px;
     margin-top:2px;
   }
-  .export-btns{
-    display:flex;
-    gap:10px;
-    flex-wrap:wrap;
-  }
-  .btn-export{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    background:var(--ink);
-    color:#F0EEE4;
-    padding:11px 18px;
-  }
+  .export-btns{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn-export{ display:flex; align-items:center; gap:8px; background:var(--ink); color:#F0EEE4; padding:11px 18px; }
   .btn-export:hover{ background:var(--ink-soft); }
   .btn-export.json{ background:#4A5178; }
   .btn-export.json:hover{ background:#5A6290; }
@@ -356,32 +368,82 @@
     pointer-events:none;
     transition:opacity 0.25s ease, transform 0.25s ease;
     z-index:50;
+    max-width:88vw;
   }
-  .toast.show{
-    opacity:1;
-    transform:translateX(-50%) translateY(0);
-  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
   footer.note{
-    max-width:1100px;
+    max-width:1180px;
     margin:26px auto 0 auto;
-    padding:0 6vw;
+    padding:0 clamp(18px,6vw,6vw);
     color:var(--ink-soft);
     font-size:12.5px;
     text-align:center;
+    line-height:1.6;
   }
 
-  @media (max-width: 640px){
-    .letterhead-inner{ gap:14px; }
-    .seal{ width:52px; height:52px; font-size:12px; }
-    thead th{ font-size:10px; padding:10px 8px; }
-    td input{ padding:10px 8px; font-size:13px; }
-    .export-dock{ flex-direction:column; align-items:stretch; }
+  /* ===== Responsive: card layout below 760px ===== */
+  @media (max-width: 760px){
+    .ledger-frame{ background:transparent; border:none; box-shadow:none; overflow:visible; }
+    table, tbody, tr, td{ display:block; width:100%; }
+    thead{ display:none; }
+    tbody tr{
+      background:var(--paper-card);
+      border:1px solid var(--paper-line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      margin-bottom:12px;
+      padding:14px 14px 6px;
+      position:relative;
+    }
+    tbody tr:nth-child(even){ background:var(--paper-card); }
+    td{ padding:0; border:none; }
+    td.col-no{
+      position:absolute;
+      top:12px; left:14px;
+      background:var(--ink);
+      color:var(--gold-soft);
+      width:26px; height:26px;
+      border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:11px;
+      padding:0;
+    }
+    td.col-action{
+      position:absolute;
+      top:6px; right:6px;
+      width:auto;
+    }
+    td:not(.col-no):not(.col-action){
+      padding:10px 0 10px 38px;
+      border-bottom:1px dashed var(--paper-line);
+    }
+    td:nth-of-type(4){ border-bottom:none; }
+    td:not(.col-no):not(.col-action)::before{
+      content:attr(data-label);
+      display:block;
+      font-family:'IBM Plex Mono', monospace;
+      font-size:10px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      color:var(--gold-soft);
+      margin-bottom:2px;
+    }
+    td input{ padding:2px 0; font-size:14.5px; }
+    .toolbar{ position:static; margin-top:0; }
+    .export-dock{ flex-direction:column; align-items:stretch; text-align:center; }
     .export-btns{ justify-content:center; }
+    .export-btns .btn-export{ flex:1 1 auto; justify-content:center; }
+  }
+
+  @media (max-width: 420px){
+    .letterhead-inner{ gap:10px; }
+    .seal{ display:none; }
+    .register-title{ align-items:flex-start; flex-direction:column; }
   }
 
   @media (prefers-reduced-motion: reduce){
-    *{ transition:none !important; }
+    *{ transition:none !important; animation:none !important; scroll-behavior:auto !important; }
   }
 </style>
 </head>
@@ -390,12 +452,18 @@
   <div class="letterhead">
     <div class="letterhead-inner">
       <div class="seal">CSE<br>NU</div>
-      <div>
+      <div class="letterhead-text">
         <h1>Netrokona University</h1>
         <div class="dept-line">Department of Computer Science &amp; Engineering</div>
         <div class="sub-line">Student Directory</div>
       </div>
     </div>
+  </div>
+
+  <div class="status-strip">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Saved locally in this browser</span>
+    <span class="save-time" id="saveTime"></span>
   </div>
 
   <div class="wrap">
@@ -409,7 +477,7 @@
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search by name, number, or address…">
       </div>
-      <button class="btn-add" id="addRowBtn">Add Student</button>
+      <button class="btn-add" id="addRowBtn">+ Add Student</button>
       <button class="btn-ghost" id="addTenBtn">+10 Rows</button>
       <button class="btn-ghost" id="clearAllBtn">Clear All</button>
     </div>
@@ -425,17 +493,17 @@
             <th class="col-action"></th>
           </tr>
         </thead>
-        <tbody id="tableBody">
-        </tbody>
+        <tbody id="tableBody"></tbody>
       </table>
       <div class="empty-state" id="emptyState" style="display:none;">
-        No entries yet — click "Add Student" to begin the register.
+        <span class="glyph">✦</span>
+        <span class="msg">No entries yet — click "Add Student" to begin.</span>
       </div>
     </div>
 
     <div class="export-dock">
       <div class="label">
-        Export Register
+        Export Data
         <small>Only rows with at least a name will be included</small>
       </div>
       <div class="export-btns">
@@ -448,7 +516,7 @@
   </div>
 
   <footer class="note">
-    CSE Department · Netrokona University — data stays in this browser tab until you export it.
+    CSE Department · Netrokona University — entries are saved automatically in this browser. Clearing your browser data will erase them, so export a backup periodically.
   </footer>
 
   <div class="toast" id="toast"></div>
@@ -460,8 +528,27 @@
   const rowCountEl = document.getElementById('rowCount');
   const searchInput = document.getElementById('searchInput');
   const toast = document.getElementById('toast');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const saveTimeEl = document.getElementById('saveTime');
 
-  let rowIdSeq = 0;
+  const STORAGE_KEY = 'nu_cse_student_directory_v1';
+  let storageAvailable = true;
+  let memoryStore = null;
+
+  // Detect whether localStorage actually works in this environment
+  try{
+    const t = '__storage_test__';
+    window.localStorage.setItem(t, '1');
+    window.localStorage.removeItem(t);
+  } catch(e){
+    storageAvailable = false;
+  }
+
+  if (!storageAvailable){
+    statusDot.classList.add('warn');
+    statusText.textContent = 'Local storage unavailable here — data will only last this session';
+  }
 
   function showToast(msg){
     toast.textContent = msg;
@@ -470,26 +557,58 @@
     showToast._t = setTimeout(()=> toast.classList.remove('show'), 2200);
   }
 
+  function persist(){
+    const data = getData(true);
+    if (storageAvailable){
+      try{
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        const now = new Date();
+        saveTimeEl.textContent = 'Last saved ' + now.toLocaleTimeString();
+        statusText.textContent = 'Saved locally in this browser';
+        statusDot.classList.remove('warn');
+      } catch(e){
+        storageAvailable = false;
+        statusDot.classList.add('warn');
+        statusText.textContent = 'Local storage unavailable here — data will only last this session';
+      }
+    } else {
+      memoryStore = data;
+    }
+  }
+
+  let persistTimer = null;
+  function schedulePersist(){
+    clearTimeout(persistTimer);
+    persistTimer = setTimeout(persist, 400);
+  }
+
+  function loadInitialData(){
+    if (storageAvailable){
+      try{
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch(e){ /* ignore, fall through */ }
+    }
+    return memoryStore;
+  }
+
   function renumber(){
     const rows = [...tableBody.querySelectorAll('tr')];
-    rows.forEach((tr, i) => {
-      tr.querySelector('.col-no').textContent = i + 1;
-    });
+    rows.forEach((tr, i) => { tr.querySelector('.col-no').textContent = i + 1; });
     const filled = rows.filter(r => r.querySelector('.f-name').value.trim() !== '').length;
     rowCountEl.textContent = `${filled} student${filled === 1 ? '' : 's'} recorded`;
     emptyState.style.display = rows.length === 0 ? 'block' : 'none';
   }
 
-  function addRow(prefill){
+  function addRow(prefill, skipAnimation){
     prefill = prefill || {};
-    rowIdSeq += 1;
     const tr = document.createElement('tr');
-    tr.dataset.rid = rowIdSeq;
+    if (skipAnimation) tr.style.animation = 'none';
     tr.innerHTML = `
       <td class="col-no">0</td>
-      <td><input type="text" class="f-name" placeholder="Full name" value="${prefill.name || ''}"></td>
-      <td><input type="tel" class="f-number" placeholder="e.g. 017XXXXXXXX" value="${prefill.number || ''}"></td>
-      <td><input type="text" class="f-address" placeholder="Village/Area, Upazila, District" value="${prefill.address || ''}"></td>
+      <td data-label="Name"><input type="text" class="f-name" placeholder="Full name" value="${escapeAttr(prefill.name || '')}"></td>
+      <td data-label="Number"><input type="tel" class="f-number" placeholder="e.g. 017XXXXXXXX" value="${escapeAttr(prefill.number || '')}"></td>
+      <td data-label="Address"><input type="text" class="f-address" placeholder="Village/Area, Upazila, District" value="${escapeAttr(prefill.address || '')}"></td>
       <td class="col-action"><button class="row-delete" title="Remove row" aria-label="Remove row">✕</button></td>
     `;
     tableBody.appendChild(tr);
@@ -497,30 +616,39 @@
     tr.querySelector('.row-delete').addEventListener('click', () => {
       tr.remove();
       renumber();
+      schedulePersist();
+      showToast('Row removed');
     });
     tr.querySelectorAll('input').forEach(inp => {
-      inp.addEventListener('input', renumber);
+      inp.addEventListener('input', () => { renumber(); schedulePersist(); });
     });
     renumber();
     return tr;
   }
 
+  function escapeAttr(str){
+    return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  }
+
   document.getElementById('addRowBtn').addEventListener('click', () => {
     const tr = addRow();
     tr.querySelector('.f-name').focus();
+    schedulePersist();
   });
 
   document.getElementById('addTenBtn').addEventListener('click', () => {
     for(let i=0;i<10;i++) addRow();
+    schedulePersist();
     showToast('Added 10 blank rows');
   });
 
   document.getElementById('clearAllBtn').addEventListener('click', () => {
     if (tableBody.children.length === 0) return;
-    if (confirm('Remove all entries from the register? This cannot be undone.')){
+    if (confirm('Remove all entries? This cannot be undone.')){
       tableBody.innerHTML = '';
       renumber();
-      showToast('Register cleared');
+      persist();
+      showToast('All entries cleared');
     }
   });
 
@@ -536,14 +664,14 @@
     });
   });
 
-  function getData(){
+  function getData(includeBlank){
     const rows = [...tableBody.querySelectorAll('tr')];
     const data = [];
     rows.forEach((tr) => {
       const name = tr.querySelector('.f-name').value.trim();
       const number = tr.querySelector('.f-number').value.trim();
       const address = tr.querySelector('.f-address').value.trim();
-      if (name !== ''){
+      if (includeBlank || name !== ''){
         data.push({ serial: data.length + 1, name, number, address });
       }
     });
@@ -561,9 +689,8 @@
     URL.revokeObjectURL(url);
   }
 
-  // ---- JSON export ----
   document.getElementById('exportJson').addEventListener('click', () => {
-    const data = getData();
+    const data = getData(false);
     if (data.length === 0){ showToast('Add at least one student first'); return; }
     const payload = {
       institution: "Netrokona University",
@@ -572,16 +699,13 @@
       total_students: data.length,
       students: data
     };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    downloadBlob(blob, 'cse_student_register.json');
+    downloadBlob(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), 'cse_student_directory.json');
     showToast('JSON downloaded');
   });
 
-  // ---- Excel export ----
   document.getElementById('exportExcel').addEventListener('click', () => {
-    const data = getData();
+    const data = getData(false);
     if (data.length === 0){ showToast('Add at least one student first'); return; }
-
     const aoa = [
       ['Netrokona University'],
       ['Department of Computer Science & Engineering'],
@@ -590,7 +714,6 @@
       ['No.', 'Name', 'Number', 'Currently Living Address']
     ];
     data.forEach(d => aoa.push([d.serial, d.name, d.number, d.address]));
-
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!merges'] = [
       { s:{r:0,c:0}, e:{r:0,c:3} },
@@ -598,18 +721,15 @@
       { s:{r:2,c:0}, e:{r:2,c:3} }
     ];
     ws['!cols'] = [ { wch:6 }, { wch:26 }, { wch:18 }, { wch:46 } ];
-
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Student Directory');
-    XLSX.writeFile(wb, 'cse_student_register.xlsx');
+    XLSX.writeFile(wb, 'cse_student_directory.xlsx');
     showToast('Excel file downloaded');
   });
 
-  // ---- PDF export ----
   document.getElementById('exportPdf').addEventListener('click', () => {
-    const data = getData();
+    const data = getData(false);
     if (data.length === 0){ showToast('Add at least one student first'); return; }
-
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -653,12 +773,18 @@
     doc.setTextColor(120,120,120);
     doc.text(`Total students: ${data.length}   ·   Generated: ${new Date().toLocaleDateString()}`, 40, finalY + 20);
 
-    doc.save('cse_student_register.pdf');
+    doc.save('cse_student_directory.pdf');
     showToast('PDF downloaded');
   });
 
-  // seed with 3 blank rows to start
-  addRow(); addRow(); addRow();
+  // ---- Initial load: restore saved data, or seed blank rows ----
+  const saved = loadInitialData();
+  if (saved && saved.length){
+    saved.forEach(s => addRow(s, true));
+    statusText.textContent = storageAvailable ? 'Restored from local storage' : 'Restored (session only)';
+  } else {
+    addRow(); addRow(); addRow();
+  }
 })();
 </script>
 
