@@ -24,6 +24,8 @@
     --paper-card:#FBFAF5;
     --ok:#3E6B4F;
     --danger:#A83232;
+    --import-blue:#4A5178;
+    --import-blue-hover:#5A6290;
     --shadow: 0 8px 24px rgba(28,37,65,0.08);
     --radius: 8px;
   }
@@ -165,7 +167,7 @@
     gap:10px;
     flex-wrap:wrap;
     align-items:center;
-    margin-bottom:16px;
+    margin-bottom:10px;
     position:sticky;
     top:0;
     z-index:20;
@@ -202,6 +204,19 @@
     pointer-events:none;
   }
 
+  select.sort-select{
+    background:var(--paper-card);
+    border:1px solid var(--paper-line);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    padding:10px 12px;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  select.sort-select:focus-visible{ outline:2px solid var(--gold-soft); outline-offset:2px; }
+
   button{
     font-family:'IBM Plex Sans', sans-serif;
     font-weight:600;
@@ -215,6 +230,7 @@
   }
   button:active{transform:translateY(1px);}
   button:focus-visible{outline:2px solid var(--gold-soft); outline-offset:2px;}
+  button:disabled{ opacity:0.55; cursor:not-allowed; transform:none !important; }
 
   .btn-add{ background:var(--maroon); color:#F6F1E4; }
   .btn-add:hover{background:var(--maroon-deep);}
@@ -225,6 +241,72 @@
     border:1px solid var(--paper-line);
   }
   .btn-ghost:hover{background:var(--paper-card);}
+
+  .btn-import{ background:var(--import-blue); color:#F0EEE4; }
+  .btn-import:hover{ background:var(--import-blue-hover); }
+
+  .btn-danger{ background:var(--danger); color:#fff; }
+  .btn-danger:hover{ background:#8C2727; }
+
+  .hint{
+    margin:0 0 14px 0;
+    font-size:12px;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
+
+  /* ===== Bulk selection bar ===== */
+  .bulk-bar{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--ink);
+    color:#EDEAE0;
+    padding:10px 16px;
+    border-radius:var(--radius);
+    margin-bottom:16px;
+    font-size:13px;
+    box-shadow:var(--shadow);
+    animation:fadeInRow 0.2s ease;
+    flex-wrap:wrap;
+  }
+  .bulk-bar #bulkCount{
+    font-family:'IBM Plex Mono',monospace;
+    color:var(--gold-soft);
+    margin-right:auto;
+  }
+  .bulk-bar button{ padding:7px 12px; font-size:12.5px; }
+
+  /* ===== Editable column headings ===== */
+  thead th{ position:relative; }
+  .th-edit{
+    display:inline-block;
+    min-width:24px;
+    outline:none;
+    border-radius:3px;
+    padding:2px 4px;
+    margin:-2px -4px;
+    cursor:text;
+    transition:background 0.15s ease, box-shadow 0.15s ease;
+  }
+  .th-edit:hover{
+    background:rgba(201,167,104,0.18);
+    box-shadow:0 0 0 1px rgba(201,167,104,0.4);
+  }
+  .th-edit:focus{
+    background:rgba(201,167,104,0.24);
+    box-shadow:0 0 0 1px var(--gold-soft);
+    color:#fff;
+  }
+  th[data-col]::after{
+    content:"✎";
+    font-size:9px;
+    opacity:0;
+    margin-left:5px;
+    color:var(--gold-soft);
+    transition:opacity 0.15s ease;
+  }
+  th[data-col]:hover::after{ opacity:0.85; }
 
   /* ===== Ledger table (desktop) ===== */
   .ledger-frame{
@@ -249,6 +331,7 @@
     border-bottom:3px solid var(--gold);
   }
   th.col-no, td.col-no{ width:56px; text-align:center; }
+  th.col-select, td.col-select{ width:36px; text-align:center; }
   th.col-action, td.col-action{ width:52px; text-align:center; }
 
   tbody tr{
@@ -269,6 +352,7 @@
     padding:12px 6px;
     text-align:center;
   }
+  td.col-select{ padding:12px 4px; text-align:center; }
   td input{
     width:100%;
     border:none;
@@ -284,6 +368,23 @@
     background:rgba(169,128,71,0.09);
     box-shadow:inset 0 -2px 0 var(--gold);
   }
+  td input.invalid-number{
+    box-shadow:inset 0 -2px 0 var(--danger);
+  }
+
+  input[type="checkbox"]{ accent-color:var(--maroon); width:16px; height:16px; cursor:pointer; }
+
+  td[data-col="mobile"]{ position:relative; }
+  td[data-col="mobile"].dup-cell::after{
+    content:"⚠";
+    position:absolute;
+    right:10px; top:50%;
+    transform:translateY(-50%);
+    color:var(--gold-soft);
+    font-size:13px;
+    pointer-events:none;
+  }
+  td[data-col="mobile"].dup-cell input{ padding-right:28px; }
 
   .row-delete{
     background:transparent;
@@ -369,8 +470,23 @@
     transition:opacity 0.25s ease, transform 0.25s ease;
     z-index:50;
     max-width:88vw;
+    display:flex;
+    align-items:center;
   }
-  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.show{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+  .toast-action{
+    margin-left:14px;
+    background:transparent;
+    color:var(--gold-soft);
+    border:none;
+    text-decoration:underline;
+    font-weight:700;
+    font-size:12.5px;
+    padding:0;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .toast-action:hover{ color:#fff; }
 
   footer.note{
     max-width:1180px;
@@ -382,11 +498,164 @@
     line-height:1.6;
   }
 
+  /* ===== Import modal ===== */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(28,37,65,0.55);
+    backdrop-filter:blur(2px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:100;
+    padding:20px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.2s ease;
+  }
+  .modal-overlay.show{ opacity:1; pointer-events:auto; }
+  .modal-panel{
+    background:var(--paper-card);
+    border:1px solid var(--paper-line);
+    border-radius:var(--radius);
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+    width:min(560px,100%);
+    max-height:88vh;
+    display:flex;
+    flex-direction:column;
+    transform:translateY(10px);
+    transition:transform 0.2s ease;
+  }
+  .modal-overlay.show .modal-panel{ transform:translateY(0); }
+  .modal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:15px 20px;
+    border-bottom:3px solid var(--gold);
+    background:var(--ink);
+    border-radius:var(--radius) var(--radius) 0 0;
+    flex:0 0 auto;
+  }
+  .modal-head h3{ margin:0; font-family:'Playfair Display',serif; color:#EDEAE0; font-size:17px; font-weight:700; }
+  .modal-close{
+    background:transparent; color:#C7C4B8; border:none;
+    font-size:16px; padding:4px 8px; border-radius:4px;
+  }
+  .modal-close:hover{ color:#fff; background:rgba(255,255,255,0.08); }
+  .modal-body{ padding:18px 20px; overflow-y:auto; }
+  .modal-foot{
+    display:flex; justify-content:flex-end; gap:10px;
+    padding:14px 20px; border-top:1px solid var(--paper-line);
+    flex:0 0 auto;
+  }
+
+  .import-tabs{ display:flex; gap:6px; margin-bottom:14px; }
+  .import-tab{
+    flex:1;
+    background:transparent;
+    border:1px solid var(--paper-line);
+    color:var(--ink-soft);
+    padding:8px 10px;
+    font-size:12.5px;
+  }
+  .import-tab.active{ background:var(--maroon); color:#F6F1E4; border-color:var(--maroon); }
+
+  .drop-zone{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    text-align:center;
+    border:2px dashed var(--paper-line);
+    border-radius:var(--radius);
+    padding:30px 16px;
+    cursor:pointer;
+    transition:border-color 0.15s ease, background 0.15s ease;
+    color:var(--ink-soft);
+  }
+  .drop-zone:hover, .drop-zone.drag-over{
+    border-color:var(--gold-soft);
+    background:rgba(169,128,71,0.06);
+  }
+  .drop-icon{ font-size:24px; color:var(--gold-soft); }
+  .drop-text{ font-weight:600; font-size:13.5px; color:var(--ink); }
+  .drop-sub{ font-size:11.5px; }
+
+  #jsonPasteArea{
+    width:100%;
+    min-height:140px;
+    resize:vertical;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px;
+    padding:10px;
+    border:1px solid var(--paper-line);
+    border-radius:4px;
+    background:#fff;
+    color:var(--ink);
+  }
+  #jsonPasteArea:focus{ outline:2px solid var(--gold-soft); outline-offset:1px; }
+
+  .import-preview{
+    margin-top:14px;
+    padding:12px 14px;
+    background:var(--paper);
+    border:1px solid var(--paper-line);
+    border-radius:4px;
+    font-size:13px;
+  }
+  .import-preview .stat-line{ display:flex; justify-content:space-between; gap:10px; padding:2px 0; }
+  .import-preview .stat-line b{ color:var(--maroon-deep); }
+  .import-preview .stat-warn b{ color:var(--gold); }
+
+  .import-options{ margin-top:14px; font-size:13px; }
+  .import-options .option-row{ display:flex; gap:18px; flex-wrap:wrap; margin-bottom:8px; }
+  .import-options label{ display:flex; align-items:center; gap:6px; cursor:pointer; }
+
+  .import-progress{ margin-top:14px; }
+  .progress-bar{ height:8px; background:var(--paper-line); border-radius:4px; overflow:hidden; }
+  .progress-fill{ height:100%; background:var(--maroon); width:0%; transition:width 0.15s ease; }
+  #progressText{ display:block; margin-top:6px; font-size:11.5px; color:var(--ink-soft); font-family:'IBM Plex Mono',monospace; }
+
+  .import-error{
+    margin-top:12px;
+    color:var(--danger);
+    font-size:12.5px;
+    background:rgba(168,50,50,0.08);
+    border:1px solid rgba(168,50,50,0.25);
+    padding:8px 10px;
+    border-radius:4px;
+  }
+
   /* ===== Responsive: card layout below 760px ===== */
   @media (max-width: 760px){
     .ledger-frame{ background:transparent; border:none; box-shadow:none; overflow:visible; }
     table, tbody, tr, td{ display:block; width:100%; }
-    thead{ display:none; }
+    thead{
+      display:block;
+      margin-bottom:12px;
+      background:var(--ink);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    thead tr{ display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; padding:12px 14px; }
+    thead tr::before{
+      content:"Columns:";
+      font-family:'IBM Plex Mono', monospace;
+      font-size:10px;
+      letter-spacing:1px;
+      text-transform:uppercase;
+      color:var(--gold-soft);
+      opacity:0.8;
+    }
+    thead th{
+      display:inline-flex;
+      align-items:center;
+      padding:0;
+      border:none;
+      font-size:11px;
+    }
+    thead th.col-no, thead th.col-action, thead th.col-select{ display:none; }
     tbody tr{
       background:var(--paper-card);
       border:1px solid var(--paper-line);
@@ -409,17 +678,22 @@
       font-size:11px;
       padding:0;
     }
+    td.col-select{
+      position:absolute;
+      top:10px; right:38px;
+      width:auto;
+    }
     td.col-action{
       position:absolute;
       top:6px; right:6px;
       width:auto;
     }
-    td:not(.col-no):not(.col-action){
+    td:not(.col-no):not(.col-action):not(.col-select){
       padding:10px 0 10px 38px;
       border-bottom:1px dashed var(--paper-line);
     }
-    td:nth-of-type(4){ border-bottom:none; }
-    td:not(.col-no):not(.col-action)::before{
+    td:nth-of-type(5){ border-bottom:none; }
+    td:not(.col-no):not(.col-action):not(.col-select)::before{
       content:attr(data-label);
       display:block;
       font-family:'IBM Plex Mono', monospace;
@@ -430,10 +704,15 @@
       margin-bottom:2px;
     }
     td input{ padding:2px 0; font-size:14.5px; }
+    td input.invalid-number{ box-shadow:inset 0 -2px 0 var(--danger); }
+    td[data-col="mobile"].dup-cell::after{ right:0; }
+    td[data-col="mobile"].dup-cell input{ padding-right:20px; }
     .toolbar{ position:static; margin-top:0; }
     .export-dock{ flex-direction:column; align-items:stretch; text-align:center; }
     .export-btns{ justify-content:center; }
     .export-btns .btn-export{ flex:1 1 auto; justify-content:center; }
+    .bulk-bar{ flex-direction:column; align-items:stretch; text-align:center; }
+    .bulk-bar #bulkCount{ margin-right:0; }
   }
 
   @media (max-width: 420px){
@@ -477,19 +756,34 @@
       <div class="search-box">
         <input type="text" id="searchInput" placeholder="Search by name, mobile number, or address…">
       </div>
+      <select class="sort-select" id="sortSelect" aria-label="Sort entries">
+        <option value="" disabled selected>Sort by…</option>
+        <option value="name-asc">Name A–Z</option>
+        <option value="name-desc">Name Z–A</option>
+      </select>
       <button class="btn-add" id="addRowBtn">+ Add Student</button>
       <button class="btn-ghost" id="addTenBtn">+10 Rows</button>
+      <button class="btn-import" id="openImportBtn">⬆ Import JSON</button>
+      <button class="btn-ghost" id="resetHeadingsBtn" title="Restore the default column names">↺ Reset Headings</button>
       <button class="btn-ghost" id="clearAllBtn">Clear All</button>
+    </div>
+    <p class="hint">Tip: click any column title in the table below to rename it — your labels are saved automatically. Use <strong>Import JSON</strong> to bring in large batches of students at once.</p>
+
+    <div class="bulk-bar" id="bulkBar" style="display:none;">
+      <span id="bulkCount">0 selected</span>
+      <button class="btn-ghost" id="bulkDeselect">Clear selection</button>
+      <button class="btn-danger" id="bulkDeleteBtn">Delete Selected</button>
     </div>
 
     <div class="ledger-frame">
       <table id="ledgerTable">
         <thead>
           <tr>
+            <th class="col-select"><input type="checkbox" id="selectAllCheckbox" aria-label="Select all rows"></th>
             <th class="col-no">No.</th>
-            <th>Name</th>
-            <th>Mobile Number</th>
-            <th>Currently Living Address</th>
+            <th data-col="name"><span class="th-edit" contenteditable="true" spellcheck="false" data-default="Name">Name</span></th>
+            <th data-col="mobile"><span class="th-edit" contenteditable="true" spellcheck="false" data-default="Mobile Number">Mobile Number</span></th>
+            <th data-col="address"><span class="th-edit" contenteditable="true" spellcheck="false" data-default="Currently Living Address">Currently Living Address</span></th>
             <th class="col-action"></th>
           </tr>
         </thead>
@@ -497,7 +791,7 @@
       </table>
       <div class="empty-state" id="emptyState" style="display:none;">
         <span class="glyph">✦</span>
-        <span class="msg">No entries yet — click "Add Student" to begin.</span>
+        <span class="msg">No entries yet — click "Add Student" or import a JSON file to begin.</span>
       </div>
     </div>
 
@@ -516,10 +810,60 @@
   </div>
 
   <footer class="note">
-    CSE Department · Netrokona University — entries are saved automatically in this browser. Clearing your browser data will erase them, so export a backup periodically.
+    CSE Department · Netrokona University — entries are saved automatically in this browser. Clearing your browser data will erase them, so export a backup periodically. You can restore from that backup any time using Import JSON.
   </footer>
 
   <div class="toast" id="toast"></div>
+
+  <!-- ===== Import Modal ===== -->
+  <div class="modal-overlay" id="importOverlay">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="importTitle">
+      <div class="modal-head">
+        <h3 id="importTitle">Import Student Data</h3>
+        <button class="modal-close" id="importClose" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="import-tabs">
+          <button type="button" class="import-tab active" data-tab="file">Upload File</button>
+          <button type="button" class="import-tab" data-tab="paste">Paste JSON</button>
+        </div>
+
+        <div class="import-pane" data-pane="file">
+          <label class="drop-zone" id="dropZone" for="jsonFileInput">
+            <span class="drop-icon">⤒</span>
+            <span class="drop-text">Drop a .json file here, or click to browse</span>
+            <span class="drop-sub">Large files are read in the background so the page won't freeze</span>
+          </label>
+          <input type="file" id="jsonFileInput" accept=".json,application/json" hidden>
+        </div>
+
+        <div class="import-pane" data-pane="paste" style="display:none;">
+          <textarea id="jsonPasteArea" placeholder='Paste JSON here, e.g. [{"name":"...","mobile_number":"...","address":"..."}]'></textarea>
+        </div>
+
+        <div class="import-preview" id="importPreview" style="display:none;"></div>
+
+        <div class="import-options" id="importOptions" style="display:none;">
+          <div class="option-row">
+            <label><input type="radio" name="importMode" value="append" checked> Append to existing entries</label>
+            <label><input type="radio" name="importMode" value="replace"> Replace all existing entries</label>
+          </div>
+          <label class="option-checkbox"><input type="checkbox" id="skipDupCheckbox"> Skip entries whose mobile number is already in the table</label>
+        </div>
+
+        <div class="import-progress" id="importProgress" style="display:none;">
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <span id="progressText">Importing…</span>
+        </div>
+
+        <p class="import-error" id="importError" style="display:none;"></p>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-ghost" id="importCancel">Cancel</button>
+        <button class="btn-add" id="importConfirm" disabled>Import</button>
+      </div>
+    </div>
+  </div>
 
 <script>
 (function(){
@@ -531,8 +875,69 @@
   const statusDot = document.getElementById('statusDot');
   const statusText = document.getElementById('statusText');
   const saveTimeEl = document.getElementById('saveTime');
+  const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+  const bulkBar = document.getElementById('bulkBar');
+  const bulkCountEl = document.getElementById('bulkCount');
+  const sortSelect = document.getElementById('sortSelect');
 
-  const STORAGE_KEY = 'nu_cse_student_directory_v1';
+  const headingEls = {
+    name: document.querySelector('th[data-col="name"] .th-edit'),
+    mobile: document.querySelector('th[data-col="mobile"] .th-edit'),
+    address: document.querySelector('th[data-col="address"] .th-edit')
+  };
+  const DEFAULT_HEADINGS = { name: 'Name', mobile: 'Mobile Number', address: 'Currently Living Address' };
+
+  function getHeadings(){
+    return {
+      name: headingEls.name.textContent.trim() || DEFAULT_HEADINGS.name,
+      mobile: headingEls.mobile.textContent.trim() || DEFAULT_HEADINGS.mobile,
+      address: headingEls.address.textContent.trim() || DEFAULT_HEADINGS.address
+    };
+  }
+
+  function applyHeadingsToRows(){
+    const h = getHeadings();
+    tableBody.querySelectorAll('tr').forEach(tr => {
+      tr.querySelector('[data-col="name"]').setAttribute('data-label', h.name);
+      tr.querySelector('[data-col="mobile"]').setAttribute('data-label', h.mobile);
+      tr.querySelector('[data-col="address"]').setAttribute('data-label', h.address);
+    });
+  }
+
+  function setHeadings(h){
+    headingEls.name.textContent = (h && h.name) || DEFAULT_HEADINGS.name;
+    headingEls.mobile.textContent = (h && h.mobile) || DEFAULT_HEADINGS.mobile;
+    headingEls.address.textContent = (h && h.address) || DEFAULT_HEADINGS.address;
+    applyHeadingsToRows();
+  }
+
+  Object.values(headingEls).forEach(el => {
+    el.addEventListener('input', () => { applyHeadingsToRows(); schedulePersist(); });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter'){ e.preventDefault(); el.blur(); }
+    });
+    el.addEventListener('blur', () => {
+      if (el.textContent.trim() === ''){
+        el.textContent = el.getAttribute('data-default');
+        applyHeadingsToRows();
+        schedulePersist();
+      }
+    });
+    el.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text').replace(/[\r\n]+/g,' ');
+      document.execCommand('insertText', false, text);
+    });
+  });
+
+  document.getElementById('resetHeadingsBtn').addEventListener('click', () => {
+    setHeadings(DEFAULT_HEADINGS);
+    schedulePersist();
+    showToast('Column names reset to default');
+  });
+
+  const STORAGE_KEY = 'nu_cse_student_directory_v2';
+  const LEGACY_STORAGE_KEY = 'nu_cse_student_directory_v1';
   let storageAvailable = true;
   let memoryStore = null;
 
@@ -550,29 +955,46 @@
     statusText.textContent = 'Local storage unavailable here — data will only last this session';
   }
 
-  function showToast(msg){
-    toast.textContent = msg;
+  function showToast(msg, actionLabel, actionFn){
+    toast.innerHTML = '';
+    toast.appendChild(document.createTextNode(msg));
+    if (actionLabel && actionFn){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'toast-action';
+      btn.textContent = actionLabel;
+      btn.addEventListener('click', () => {
+        actionFn();
+        toast.classList.remove('show');
+      });
+      toast.appendChild(btn);
+    }
     toast.classList.add('show');
     clearTimeout(showToast._t);
-    showToast._t = setTimeout(()=> toast.classList.remove('show'), 2200);
+    showToast._t = setTimeout(()=> toast.classList.remove('show'), actionLabel ? 4800 : 2200);
   }
 
   function persist(){
-    const data = getData(true);
+    const payload = { headings: getHeadings(), students: getData(true) };
     if (storageAvailable){
       try{
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
         const now = new Date();
         saveTimeEl.textContent = 'Last saved ' + now.toLocaleTimeString();
         statusText.textContent = 'Saved locally in this browser';
         statusDot.classList.remove('warn');
       } catch(e){
-        storageAvailable = false;
-        statusDot.classList.add('warn');
-        statusText.textContent = 'Local storage unavailable here — data will only last this session';
+        if (e && e.name === 'QuotaExceededError'){
+          statusDot.classList.add('warn');
+          statusText.textContent = 'Too much data for local storage — export a backup; recent changes may not persist';
+        } else {
+          storageAvailable = false;
+          statusDot.classList.add('warn');
+          statusText.textContent = 'Local storage unavailable here — data will only last this session';
+        }
       }
     } else {
-      memoryStore = data;
+      memoryStore = payload;
     }
   }
 
@@ -587,47 +1009,191 @@
       try{
         const raw = window.localStorage.getItem(STORAGE_KEY);
         if (raw) return JSON.parse(raw);
+        const legacyRaw = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (legacyRaw){
+          const legacyStudents = JSON.parse(legacyRaw);
+          window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+          return { headings: DEFAULT_HEADINGS, students: legacyStudents };
+        }
       } catch(e){ /* ignore, fall through */ }
     }
     return memoryStore;
   }
 
+  function normalizeMobile(v){ return String(v||'').replace(/\D/g,''); }
+
+  let currentDupCount = 0;
+
+  function updateRowCountText(){
+    const rows = [...tableBody.querySelectorAll('tr')];
+    const filled = rows.filter(r => r.querySelector('.f-name').value.trim() !== '').length;
+    rowCountEl.textContent = `${filled} student${filled === 1 ? '' : 's'} recorded` +
+      (currentDupCount > 0 ? ` · ${currentDupCount} duplicate number${currentDupCount === 1 ? '' : 's'} flagged` : '');
+  }
+
+  function flagDuplicates(){
+    const rows = [...tableBody.querySelectorAll('tr')];
+    const counts = {};
+    rows.forEach(tr => {
+      const m = normalizeMobile(tr.querySelector('.f-number').value);
+      if (m) counts[m] = (counts[m] || 0) + 1;
+    });
+    let dupCount = 0;
+    rows.forEach(tr => {
+      const numberTd = tr.querySelector('td[data-col="mobile"]');
+      const m = normalizeMobile(tr.querySelector('.f-number').value);
+      const isDup = !!(m && counts[m] > 1);
+      numberTd.classList.toggle('dup-cell', isDup);
+      numberTd.title = isDup ? `This number appears ${counts[m]} times in the table` : '';
+      if (isDup) dupCount++;
+    });
+    currentDupCount = dupCount;
+    updateRowCountText();
+    return dupCount;
+  }
+
+  let dupFlagTimer = null;
+  function scheduleDupFlag(){
+    clearTimeout(dupFlagTimer);
+    dupFlagTimer = setTimeout(flagDuplicates, 250);
+  }
+
+  const MOBILE_PATTERN = /^(?:\+?880|0)1[3-9]\d{8}$/;
+  function validateMobileField(input){
+    const v = input.value.trim().replace(/[\s-]/g,'');
+    const valid = v === '' || MOBILE_PATTERN.test(v);
+    input.classList.toggle('invalid-number', !valid);
+    input.title = valid ? '' : 'This doesn\'t look like a Bangladeshi mobile number (e.g. 017XXXXXXXX) — it will still be saved as entered';
+  }
+
+  function updateBulkBar(){
+    const total = tableBody.querySelectorAll('.row-select').length;
+    const checked = tableBody.querySelectorAll('.row-select:checked').length;
+    bulkBar.style.display = checked > 0 ? 'flex' : 'none';
+    bulkCountEl.textContent = `${checked} selected`;
+    if (selectAllCheckbox){
+      selectAllCheckbox.checked = total > 0 && checked === total;
+      selectAllCheckbox.indeterminate = checked > 0 && checked < total;
+    }
+  }
+
   function renumber(){
     const rows = [...tableBody.querySelectorAll('tr')];
     rows.forEach((tr, i) => { tr.querySelector('.col-no').textContent = i + 1; });
-    const filled = rows.filter(r => r.querySelector('.f-name').value.trim() !== '').length;
-    rowCountEl.textContent = `${filled} student${filled === 1 ? '' : 's'} recorded`;
+    updateRowCountText();
     emptyState.style.display = rows.length === 0 ? 'block' : 'none';
+    updateBulkBar();
   }
 
-  function addRow(prefill, skipAnimation){
-    prefill = prefill || {};
-    const tr = document.createElement('tr');
-    if (skipAnimation) tr.style.animation = 'none';
-    tr.innerHTML = `
-      <td class="col-no">0</td>
-      <td data-label="Name"><input type="text" class="f-name" placeholder="Full name" value="${escapeAttr(prefill.name || '')}"></td>
-      <td data-label="Mobile Number"><input type="tel" class="f-number" placeholder="e.g. 017XXXXXXXX" value="${escapeAttr(prefill.mobile_number || prefill.number || '')}"></td>
-      <td data-label="Address"><input type="text" class="f-address" placeholder="Village/Area, Upazila, District" value="${escapeAttr(prefill.address || '')}"></td>
-      <td class="col-action"><button class="row-delete" title="Remove row" aria-label="Remove row">✕</button></td>
-    `;
-    tableBody.appendChild(tr);
-
-    tr.querySelector('.row-delete').addEventListener('click', () => {
-      tr.remove();
-      renumber();
-      schedulePersist();
-      showToast('Row removed');
-    });
-    tr.querySelectorAll('input').forEach(inp => {
-      inp.addEventListener('input', () => { renumber(); schedulePersist(); });
-    });
-    renumber();
-    return tr;
+  function rowToData(tr){
+    return {
+      name: tr.querySelector('.f-name').value,
+      mobile_number: tr.querySelector('.f-number').value,
+      address: tr.querySelector('.f-address').value
+    };
   }
 
   function escapeAttr(str){
     return String(str).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  }
+
+  function buildRowElement(prefill, skipAnimation){
+    prefill = prefill || {};
+    const h = getHeadings();
+    const tr = document.createElement('tr');
+    if (skipAnimation) tr.style.animation = 'none';
+    tr.innerHTML = `
+      <td class="col-select"><input type="checkbox" class="row-select" aria-label="Select row"></td>
+      <td class="col-no">0</td>
+      <td data-col="name" data-label="${escapeAttr(h.name)}"><input type="text" class="f-name" placeholder="Full name" value="${escapeAttr(prefill.name || '')}"></td>
+      <td data-col="mobile" data-label="${escapeAttr(h.mobile)}"><input type="tel" class="f-number" placeholder="e.g. 017XXXXXXXX" value="${escapeAttr(prefill.mobile_number || prefill.number || '')}"></td>
+      <td data-col="address" data-label="${escapeAttr(h.address)}"><input type="text" class="f-address" placeholder="Village/Area, Upazila, District" value="${escapeAttr(prefill.address || '')}"></td>
+      <td class="col-action"><button class="row-delete" title="Remove row" aria-label="Remove row">✕</button></td>
+    `;
+
+    tr.querySelector('.row-delete').addEventListener('click', () => {
+      const snapshot = [rowToData(tr)];
+      tr.remove();
+      renumber();
+      schedulePersist();
+      scheduleDupFlag();
+      showToast('Row removed', 'Undo', () => { restoreSnapshot(snapshot); });
+    });
+
+    tr.querySelector('.row-select').addEventListener('change', updateBulkBar);
+
+    const nameInput = tr.querySelector('.f-name');
+    const numberInput = tr.querySelector('.f-number');
+    const addressInput = tr.querySelector('.f-address');
+
+    [nameInput, numberInput, addressInput].forEach(inp => {
+      inp.addEventListener('input', () => { renumber(); schedulePersist(); scheduleDupFlag(); });
+    });
+    numberInput.addEventListener('blur', () => validateMobileField(numberInput));
+
+    addressInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter'){
+        e.preventDefault();
+        if (tr === tableBody.lastElementChild){
+          const newTr = addRow();
+          newTr.querySelector('.f-name').focus();
+          schedulePersist();
+        } else if (tr.nextElementSibling){
+          tr.nextElementSibling.querySelector('.f-name').focus();
+        }
+      }
+    });
+
+    return tr;
+  }
+
+  function addRow(prefill, skipAnimation){
+    const tr = buildRowElement(prefill, skipAnimation);
+    tableBody.appendChild(tr);
+    renumber();
+    return tr;
+  }
+
+  function restoreSnapshot(list){
+    list.forEach(s => addRow(s));
+    renumber();
+    persist();
+    flagDuplicates();
+  }
+
+  // Insert many rows without freezing the page: builds in document-fragment
+  // batches across animation frames, showing a progress bar for large sets.
+  function insertRowsBatched(records, opts){
+    opts = opts || {};
+    const BATCH = 200;
+    const total = records.length;
+    const showProgress = !!opts.showProgress && total > BATCH;
+    let i = 0;
+    if (showProgress){
+      document.getElementById('importProgress').style.display = 'block';
+    }
+    function step(){
+      const frag = document.createDocumentFragment();
+      const end = Math.min(i + BATCH, total);
+      for (; i < end; i++){
+        frag.appendChild(buildRowElement(records[i], true));
+      }
+      tableBody.appendChild(frag);
+      if (showProgress){
+        const pct = Math.round((i / total) * 100);
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('progressText').textContent = `Importing… ${i} / ${total}`;
+      }
+      if (i < total){
+        requestAnimationFrame(step);
+      } else {
+        if (showProgress) document.getElementById('importProgress').style.display = 'none';
+        renumber();
+        flagDuplicates();
+        if (opts.onDone) opts.onDone();
+      }
+    }
+    step();
   }
 
   document.getElementById('addRowBtn').addEventListener('click', () => {
@@ -644,23 +1210,74 @@
 
   document.getElementById('clearAllBtn').addEventListener('click', () => {
     if (tableBody.children.length === 0) return;
-    if (confirm('Remove all entries? This cannot be undone.')){
+    if (confirm('Remove all entries? You can Undo immediately after from the confirmation message.')){
+      const snapshot = getData(true);
+      const headingsSnapshot = getHeadings();
       tableBody.innerHTML = '';
       renumber();
       persist();
-      showToast('All entries cleared');
+      showToast('All entries cleared', 'Undo', () => {
+        setHeadings(headingsSnapshot);
+        insertRowsBatched(snapshot, { onDone: () => { persist(); } });
+      });
     }
   });
 
+  // ---- Bulk selection ----
+  selectAllCheckbox.addEventListener('change', () => {
+    tableBody.querySelectorAll('.row-select').forEach(cb => cb.checked = selectAllCheckbox.checked);
+    updateBulkBar();
+  });
+
+  document.getElementById('bulkDeselect').addEventListener('click', () => {
+    tableBody.querySelectorAll('.row-select').forEach(cb => cb.checked = false);
+    updateBulkBar();
+  });
+
+  document.getElementById('bulkDeleteBtn').addEventListener('click', () => {
+    const rows = [...tableBody.querySelectorAll('tr')].filter(tr => tr.querySelector('.row-select').checked);
+    if (rows.length === 0) return;
+    if (rows.length > 5 && !confirm(`Delete ${rows.length} selected entries?`)) return;
+    const snapshot = rows.map(rowToData);
+    rows.forEach(tr => tr.remove());
+    renumber();
+    persist();
+    flagDuplicates();
+    showToast(`${rows.length} entr${rows.length === 1 ? 'y' : 'ies'} deleted`, 'Undo', () => restoreSnapshot(snapshot));
+  });
+
+  // ---- Sorting ----
+  sortSelect.addEventListener('change', () => {
+    const mode = sortSelect.value;
+    if (!mode) return;
+    const rows = [...tableBody.querySelectorAll('tr')];
+    rows.sort((a, b) => {
+      const an = a.querySelector('.f-name').value.trim().toLowerCase();
+      const bn = b.querySelector('.f-name').value.trim().toLowerCase();
+      if (an < bn) return mode === 'name-asc' ? -1 : 1;
+      if (an > bn) return mode === 'name-asc' ? 1 : -1;
+      return 0;
+    });
+    const frag = document.createDocumentFragment();
+    rows.forEach(tr => frag.appendChild(tr));
+    tableBody.appendChild(frag);
+    renumber();
+    persist();
+    showToast(mode === 'name-asc' ? 'Sorted A–Z by name' : 'Sorted Z–A by name');
+  });
+
+  // ---- Search (also matches digits-only mobile numbers, ignoring spaces/dashes) ----
   searchInput.addEventListener('input', () => {
-    const q = searchInput.value.trim().toLowerCase();
+    const qRaw = searchInput.value.trim().toLowerCase();
+    const qDigits = qRaw.replace(/\D/g,'');
     [...tableBody.querySelectorAll('tr')].forEach(tr => {
-      const text = [
-        tr.querySelector('.f-name').value,
-        tr.querySelector('.f-number').value,
-        tr.querySelector('.f-address').value
-      ].join(' ').toLowerCase();
-      tr.classList.toggle('hidden-row', q !== '' && !text.includes(q));
+      if (qRaw === ''){ tr.classList.remove('hidden-row'); return; }
+      const name = tr.querySelector('.f-name').value.toLowerCase();
+      const address = tr.querySelector('.f-address').value.toLowerCase();
+      const mobileDigits = normalizeMobile(tr.querySelector('.f-number').value);
+      const matches = name.includes(qRaw) || address.includes(qRaw) ||
+        (qDigits !== '' && mobileDigits.includes(qDigits));
+      tr.classList.toggle('hidden-row', !matches);
     });
   });
 
@@ -696,6 +1313,7 @@
       institution: "Netrokona University",
       department: "Computer Science & Engineering",
       generated_at: new Date().toISOString(),
+      column_headings: getHeadings(),
       total_students: data.length,
       students: data
     };
@@ -744,7 +1362,7 @@
 
     // --- Column header row (row 5), bold + filled + bordered ---
     const headerRow = sheet.getRow(5);
-    headerRow.values = ['No.', 'Name', 'Mobile Number', 'Currently Living Address'];
+    headerRow.values = ['No.', ...(() => { const h = getHeadings(); return [h.name, h.mobile, h.address]; })()];
     headerRow.height = 24;
     headerRow.eachCell((cell) => {
       cell.font = { bold: true, size: 11.5, color: { argb: WHITE } };
@@ -835,7 +1453,7 @@
 
     doc.autoTable({
       startY: 104,
-      head: [['No.', 'Name', 'Mobile Number', 'Currently Living Address']],
+      head: [['No.', getHeadings().name, getHeadings().mobile, getHeadings().address]],
       body: data.map(d => [d.serial, d.name, d.mobile_number, d.address]),
       styles: { font:'helvetica', fontSize:9.5, cellPadding:6, textColor:[28,37,65] },
       headStyles: { fillColor:[28,37,65], textColor:[240,238,228], fontStyle:'bold' },
@@ -858,14 +1476,285 @@
     showToast('PDF downloaded');
   });
 
-  // ---- Initial load: restore saved data, or seed blank rows ----
+  // ================= JSON IMPORT =================
+  const importOverlay = document.getElementById('importOverlay');
+  const openImportBtn = document.getElementById('openImportBtn');
+  const importClose = document.getElementById('importClose');
+  const importCancel = document.getElementById('importCancel');
+  const importConfirm = document.getElementById('importConfirm');
+  const dropZone = document.getElementById('dropZone');
+  const jsonFileInput = document.getElementById('jsonFileInput');
+  const jsonPasteArea = document.getElementById('jsonPasteArea');
+  const importPreview = document.getElementById('importPreview');
+  const importOptions = document.getElementById('importOptions');
+  const importProgress = document.getElementById('importProgress');
+  const importError = document.getElementById('importError');
+  const skipDupCheckbox = document.getElementById('skipDupCheckbox');
+  const importTabs = document.querySelectorAll('.import-tab');
+  const importPanes = document.querySelectorAll('.import-pane');
+
+  let parsedImport = null; // { records: [...], headings: {...}|null }
+
+  function openImportModal(){
+    resetImportModal();
+    importOverlay.classList.add('show');
+    importTabs[0].focus();
+  }
+  function closeImportModal(){
+    importOverlay.classList.remove('show');
+    openImportBtn.focus();
+  }
+  function resetImportModal(){
+    parsedImport = null;
+    jsonPasteArea.value = '';
+    jsonFileInput.value = '';
+    importPreview.style.display = 'none';
+    importOptions.style.display = 'none';
+    importProgress.style.display = 'none';
+    importError.style.display = 'none';
+    importConfirm.disabled = true;
+    importConfirm.disabled = true;
+    importCancel.disabled = false;
+    importClose.disabled = false;
+    document.querySelector('input[name="importMode"][value="append"]').checked = true;
+    skipDupCheckbox.checked = false;
+    importTabs.forEach((t,i) => t.classList.toggle('active', i === 0));
+    importPanes.forEach((p,i) => p.style.display = i === 0 ? 'block' : 'none');
+  }
+
+  openImportBtn.addEventListener('click', openImportModal);
+  importClose.addEventListener('click', closeImportModal);
+  importCancel.addEventListener('click', closeImportModal);
+  importOverlay.addEventListener('click', (e) => { if (e.target === importOverlay) closeImportModal(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && importOverlay.classList.contains('show')) closeImportModal();
+  });
+
+  importTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      importTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const which = tab.getAttribute('data-tab');
+      importPanes.forEach(p => { p.style.display = p.getAttribute('data-pane') === which ? 'block' : 'none'; });
+    });
+  });
+
+  dropZone.addEventListener('click', () => jsonFileInput.click());
+  dropZone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); jsonFileInput.click(); }
+  });
+  ['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, (e) => {
+    e.preventDefault(); dropZone.classList.add('drag-over');
+  }));
+  ['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, (e) => {
+    e.preventDefault(); dropZone.classList.remove('drag-over');
+  }));
+  dropZone.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) readImportFile(file);
+  });
+  jsonFileInput.addEventListener('change', () => {
+    const file = jsonFileInput.files[0];
+    if (file) readImportFile(file);
+  });
+
+  function readImportFile(file){
+    if (!/\.json$/i.test(file.name) && file.type !== 'application/json'){
+      showImportError('That doesn\'t look like a .json file. Please choose a JSON file.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => processRawJson(reader.result);
+    reader.onerror = () => showImportError('Could not read that file. Please try again.');
+    reader.readAsText(file);
+  }
+
+  jsonPasteArea.addEventListener('input', () => {
+    const v = jsonPasteArea.value.trim();
+    if (v === ''){
+      importPreview.style.display = 'none';
+      importOptions.style.display = 'none';
+      importError.style.display = 'none';
+      importConfirm.disabled = true;
+      return;
+    }
+    processRawJson(v);
+  });
+
+  const FIELD_ALIASES = {
+    name: ['name','fullname','full_name','studentname','student_name'],
+    mobile_number: ['mobile_number','mobilenumber','mobile','phone','phonenumber','phone_number','contact','number','contactnumber'],
+    address: ['address','currentaddress','current_address','currentlivingaddress','presentaddress','present_address','location']
+  };
+
+  function normalizeKey(k){
+    return String(k).toLowerCase().replace(/[\s_-]/g,'');
+  }
+
+  function resolveRecord(obj){
+    const normMap = {};
+    Object.keys(obj).forEach(k => { normMap[normalizeKey(k)] = obj[k]; });
+    const rec = { name:'', mobile_number:'', address:'' };
+    Object.entries(FIELD_ALIASES).forEach(([field, aliases]) => {
+      for (const alias of aliases){
+        const nk = normalizeKey(alias);
+        if (normMap[nk] !== undefined && normMap[nk] !== null && String(normMap[nk]).trim() !== ''){
+          rec[field] = String(normMap[nk]).trim();
+          break;
+        }
+      }
+    });
+    return rec;
+  }
+
+  function showImportError(msg){
+    importError.textContent = msg;
+    importError.style.display = 'block';
+    importPreview.style.display = 'none';
+    importOptions.style.display = 'none';
+    importConfirm.disabled = true;
+    parsedImport = null;
+  }
+
+  function processRawJson(text){
+    importError.style.display = 'none';
+    let parsed;
+    try{
+      parsed = JSON.parse(text);
+    } catch(e){
+      showImportError('That JSON couldn\'t be read. Check for a missing bracket, quote, or comma.');
+      return;
+    }
+
+    let list = null;
+    let headings = null;
+    if (Array.isArray(parsed)){
+      list = parsed;
+    } else if (parsed && typeof parsed === 'object'){
+      if (Array.isArray(parsed.students)) { list = parsed.students; headings = parsed.column_headings || null; }
+      else if (Array.isArray(parsed.data)) list = parsed.data;
+      else if (Array.isArray(parsed.rows)) list = parsed.rows;
+      else if (Array.isArray(parsed.entries)) list = parsed.entries;
+    }
+
+    if (!list){
+      showImportError('Couldn\'t find a list of students in this JSON. Expected an array of records, or an object with a "students" array — like the file this tool exports.');
+      return;
+    }
+    if (list.length === 0){
+      showImportError('This file doesn\'t contain any records.');
+      return;
+    }
+
+    const records = list
+      .filter(item => item && typeof item === 'object' && !Array.isArray(item))
+      .map(resolveRecord)
+      .filter(r => r.name || r.mobile_number || r.address);
+
+    if (records.length === 0){
+      showImportError('None of the records had a recognizable name, mobile number, or address field.');
+      return;
+    }
+
+    const existingMobiles = {};
+    [...tableBody.querySelectorAll('.f-number')].forEach(inp => {
+      const m = normalizeMobile(inp.value);
+      if (m) existingMobiles[m] = (existingMobiles[m] || 0) + 1;
+    });
+    const importMobileCounts = {};
+    records.forEach(r => {
+      const m = normalizeMobile(r.mobile_number);
+      if (m) importMobileCounts[m] = (importMobileCounts[m] || 0) + 1;
+    });
+    let dupWithinImport = 0, dupWithExisting = 0;
+    records.forEach(r => {
+      const m = normalizeMobile(r.mobile_number);
+      if (!m) return;
+      if (importMobileCounts[m] > 1) dupWithinImport++;
+      if (existingMobiles[m]) dupWithExisting++;
+    });
+
+    const skippedRaw = list.length - records.length;
+    parsedImport = { records, headings };
+
+    importPreview.innerHTML =
+      `<div class="stat-line"><span>Valid records found</span><b>${records.length}</b></div>` +
+      (skippedRaw > 0 ? `<div class="stat-line stat-warn"><span>Entries skipped (no usable fields)</span><b>${skippedRaw}</b></div>` : '') +
+      (dupWithinImport > 0 ? `<div class="stat-line stat-warn"><span>Duplicate numbers within this file</span><b>${dupWithinImport}</b></div>` : '') +
+      (dupWithExisting > 0 ? `<div class="stat-line stat-warn"><span>Numbers matching entries already in the table</span><b>${dupWithExisting}</b></div>` : '') +
+      (headings ? `<div class="stat-line"><span>Column names included in file</span><b>Will be applied</b></div>` : '');
+
+    importPreview.style.display = 'block';
+    importOptions.style.display = 'block';
+    importConfirm.disabled = false;
+  }
+
+  importConfirm.addEventListener('click', () => {
+    if (!parsedImport) return;
+    const mode = document.querySelector('input[name="importMode"]:checked').value;
+    const skipDup = skipDupCheckbox.checked;
+
+    let records = parsedImport.records;
+
+    if (skipDup){
+      const seen = {};
+      [...tableBody.querySelectorAll('.f-number')].forEach(inp => {
+        const m = normalizeMobile(inp.value);
+        if (m) seen[m] = true;
+      });
+      records = records.filter(r => {
+        const m = normalizeMobile(r.mobile_number);
+        if (!m) return true;
+        if (seen[m]) return false;
+        seen[m] = true;
+        return true;
+      });
+    }
+
+    if (records.length === 0){
+      showImportError('Nothing left to import after skipping duplicates.');
+      return;
+    }
+
+    importConfirm.disabled = true;
+    importCancel.disabled = true;
+    importClose.disabled = true;
+
+    if (mode === 'replace'){
+      tableBody.innerHTML = '';
+    }
+    if (parsedImport.headings){
+      setHeadings({
+        name: parsedImport.headings.name,
+        mobile: parsedImport.headings.mobile,
+        address: parsedImport.headings.address
+      });
+    }
+
+    const importedCount = records.length;
+    insertRowsBatched(records, {
+      showProgress: true,
+      onDone: () => {
+        persist();
+        closeImportModal();
+        showToast(`Imported ${importedCount} student${importedCount === 1 ? '' : 's'}${mode === 'replace' ? ' (existing data replaced)' : ''}`);
+      }
+    });
+  });
+
+  // ---- Initial load: restore saved headings + data, or seed blank rows ----
   const saved = loadInitialData();
-  if (saved && saved.length){
-    saved.forEach(s => addRow(s, true));
-    statusText.textContent = storageAvailable ? 'Restored from local storage' : 'Restored (session only)';
+  if (saved && saved.students && saved.students.length){
+    if (saved.headings) setHeadings(saved.headings);
+    insertRowsBatched(saved.students, {
+      onDone: () => {
+        statusText.textContent = storageAvailable ? 'Restored from local storage' : 'Restored (session only)';
+      }
+    });
   } else {
     addRow(); addRow(); addRow();
   }
+  updateBulkBar();
 })();
 </script>
 
